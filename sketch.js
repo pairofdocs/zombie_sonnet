@@ -9,7 +9,6 @@ let reloadStartTime = 0;
 let reloadDuration = 500; // Changed from 1000 to 500 (0.5 seconds to reload)
 
 // Environment variables
-let house;
 let zombies = [];
 let bullets = [];
 let spawnPoints = [];
@@ -44,9 +43,6 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   noCursor();
   
-  // Create house with spawn points (windows and doors)
-  house = new House();
-  
   // Define spawn points (x, y, width, height, type)
   spawnPoints = [
     { x: width * 0.2, y: height * 0.3, w: 100, h: 150, type: 'window' },
@@ -76,10 +72,8 @@ function draw() {
 }
 
 function drawGameScene() {
-  background(20); // Dark background for night time
-  
-  // Draw house interior
-  house.display();
+  // Use clear() instead of background to make the canvas transparent
+  clear();
   
   // Update and display zombies if game is in progress
   if (gameState === 'playing') {
@@ -448,132 +442,6 @@ function resetGame() {
   lastSpawnTime = 0;
   spawnInterval = 1500;
   difficultyTimer = millis();
-}
-
-// House class
-class House {
-  constructor() {
-    this.wallColor = color(60, 40, 20);
-    this.floorColor = color(80, 60, 30);
-    this.couchColor = color(120, 60, 40); // Brown couch
-    this.tvColor = color(20, 20, 20); // Dark TV
-    this.tvScreenColor = color(30, 30, 60); // Blue-ish screen
-  }
-  
-  display() {
-    // Draw floor
-    fill(this.floorColor);
-    rect(0, height * 0.6, width, height * 0.4);
-    
-    // Draw walls
-    fill(this.wallColor);
-    rect(0, 0, width, height * 0.6);
-    
-    // Draw TV on the wall
-    this.drawTV();
-    
-    // Draw couch in front of TV
-    this.drawCouch();
-    
-    // Draw spawn points (windows and doors)
-    for (let point of spawnPoints) {
-      if (point.type === 'window') {
-        fill(0, 0, 40, 200); // Dark blue for windows
-        stroke(100);
-        rect(point.x, point.y, point.w, point.h);
-        
-        // Window frame
-        stroke(150);
-        line(point.x, point.y + point.h/2, point.x + point.w, point.y + point.h/2);
-        line(point.x + point.w/2, point.y, point.x + point.w/2, point.y + point.h);
-      } else if (point.type === 'door') {
-        fill(30, 20, 10); // Dark brown for doors
-        stroke(60);
-        rect(point.x, point.y, point.w, point.h);
-        
-        // Door handle
-        fill(200);
-        noStroke();
-        ellipse(point.x + point.w * 0.8, point.y + point.h * 0.5, 10, 10);
-      }
-    }
-  }
-  
-  drawTV() {
-    // TV position - moved even lower and more to the left
-    let tvWidth = width * 0.18;
-    let tvHeight = height * 0.14;
-    let tvX = width * 0.05;
-    let tvY = height * 0.72;
-    
-    // TV frame
-    fill(this.tvColor);
-    stroke(40);
-    strokeWeight(2);
-    rect(tvX, tvY, tvWidth, tvHeight);
-    
-    // TV screen
-    fill(this.tvScreenColor);
-    noStroke();
-    rect(tvX + 10, tvY + 10, tvWidth - 20, tvHeight - 20);
-    
-    // TV stand
-    fill(this.tvColor);
-    stroke(40);
-    rect(tvX + tvWidth/2 - 15, tvY + tvHeight, 30, 15);
-    rect(tvX + tvWidth/2 - 30, tvY + tvHeight + 15, 60, 8);
-    
-    // Static on screen (random pixels)
-    for (let i = 0; i < 50; i++) {
-      let staticX = random(tvX + 10, tvX + tvWidth - 20);
-      let staticY = random(tvY + 10, tvY + tvHeight - 20);
-      let staticSize = random(1, 3);
-      let brightness = random(100, 255);
-      
-      fill(brightness, brightness, brightness, 150);
-      noStroke();
-      rect(staticX, staticY, staticSize, staticSize);
-    }
-    
-    noStroke();
-  }
-  
-  drawCouch() {
-    // Couch position - moved even lower and more to the left
-    let couchWidth = width * 0.22;
-    let couchHeight = height * 0.07;
-    let couchX = width * 0.75;
-    let couchY = height * 0.78;
-    
-    // Couch base
-    fill(this.couchColor);
-    stroke(80, 40, 20);
-    strokeWeight(2);
-    rect(couchX, couchY, couchWidth, couchHeight, 5);
-    
-    // Couch back
-    rect(couchX, couchY - couchHeight * 0.8, couchWidth, couchHeight * 0.8, 5, 5, 0, 0);
-    
-    // Couch arms
-    rect(couchX - couchHeight * 0.5, couchY - couchHeight * 0.4, couchHeight * 0.5, couchHeight * 1.4, 5, 0, 0, 5);
-    rect(couchX + couchWidth, couchY - couchHeight * 0.4, couchHeight * 0.5, couchHeight * 1.4, 0, 5, 5, 0);
-    
-    // Couch cushions
-    fill(this.couchColor);
-    stroke(100, 50, 30);
-    let cushionWidth = couchWidth / 3;
-    for (let i = 0; i < 3; i++) {
-      rect(couchX + i * cushionWidth + 5, couchY + 5, cushionWidth - 10, couchHeight - 10, 3);
-    }
-    
-    // Couch pillows
-    fill(140, 70, 50);
-    noStroke();
-    ellipse(couchX + couchHeight * 0.7, couchY - couchHeight * 0.3, couchHeight * 0.7, couchHeight * 0.7);
-    ellipse(couchX + couchWidth - couchHeight * 0.7, couchY - couchHeight * 0.3, couchHeight * 0.7, couchHeight * 0.7);
-    
-    noStroke();
-  }
 }
 
 // Zombie class
