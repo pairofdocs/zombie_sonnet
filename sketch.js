@@ -7,6 +7,7 @@ let maxAmmo = 30;
 let reloading = false;
 let reloadStartTime = 0;
 let reloadDuration = 500; // Changed from 1000 to 500 (0.5 seconds to reload)
+let reloadButtonArea = { x: 0, y: 0, width: 0, height: 0 }; // Area for clickable reload button
 
 // Environment variables
 let zombies = [];
@@ -187,7 +188,7 @@ function drawGameOverScreen() {
   
   textSize(20);
   textLeading(30);
-  text("RELOAD THE PAGE\nTO PLAY AGAIN", width/2, height * 0.7);
+  text("REFRESH THE PAGE\nTO PLAY AGAIN", width/2, height * 0.7);
 }
 
 function drawHUD() {
@@ -242,14 +243,38 @@ function drawHUD() {
   
   // Display RELOAD message when out of ammo
   if (ammo === 0 && !reloading) {
+    // Create a clickable button area
+    let buttonWidth = 150;
+    let buttonHeight = 50;
+    let buttonX = width/2 - buttonWidth/2;
+    let buttonY = height - 75;
+    
+    // Store the button area for click detection
+    reloadButtonArea = {
+      x: buttonX,
+      y: buttonY,
+      width: buttonWidth,
+      height: buttonHeight
+    };
+    
+    // Draw button background
+    fill(150, 0, 0, 200);
+    stroke(255);
     strokeWeight(3);
-    stroke(0);
-    fill(255, 0, 0);
+    rect(buttonX, buttonY, buttonWidth, buttonHeight, 10);
+    
+    // Draw button text
+    fill(255);
     textSize(30);
     textAlign(CENTER, CENTER);
     text("RELOAD", width/2, height - 50);
+    
+    // Reset styles
     textAlign(LEFT, BASELINE);
     noStroke();
+  } else {
+    // Reset button area when not showing
+    reloadButtonArea = { x: 0, y: 0, width: 0, height: 0 };
   }
 }
 
@@ -406,6 +431,21 @@ function mousePressed() {
     gameState = 'playing';
     // if (backgroundMusic) backgroundMusic.loop();
     return;
+  }
+  
+  // Check if player clicked on the reload button
+  if (gameState === 'playing' && ammo === 0 && !reloading) {
+    // Check if click is within the reload button area
+    if (mouseX >= reloadButtonArea.x && 
+        mouseX <= reloadButtonArea.x + reloadButtonArea.width && 
+        mouseY >= reloadButtonArea.y && 
+        mouseY <= reloadButtonArea.y + reloadButtonArea.height) {
+      // Trigger reload
+      reloading = true;
+      reloadStartTime = millis();
+      // if (reloadSound) reloadSound.play();
+      return; // Don't process as a shot
+    }
   }
   
   // Shooting
