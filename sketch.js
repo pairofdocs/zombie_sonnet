@@ -20,7 +20,8 @@ let difficultyInterval = 20000; // Changed from 10000 to 20000 (increase difficu
 let deathEffects = []; // Array to store death effect particles
 
 // Assets
-let zombieImg;
+let zombieImgs = []; // Array to hold zombie images
+let playerImg; // Add player image variable
 let bulletImg;
 let gunSound;
 let zombieDeathSound;
@@ -29,9 +30,13 @@ let backgroundMusic;
 let emptyGunSound;
 
 function preload() {
-  // Load images and sounds here
+  // Load zombie images from HTML elements and convert to p5 images
+  zombieImgs[0] = loadImage('imgs/ene1-rem.png');
+  zombieImgs[1] = loadImage('imgs/ene2-rem.png');
+  zombieImgs[2] = loadImage('imgs/ene3-rem.png');
+  playerImg = loadImage('imgs/player-rem.png'); // Load player image
+  
   // These would be replaced with actual assets
-  // zombieImg = loadImage('assets/zombie.png');
   // bulletImg = loadImage('assets/bullet.png');
   // gunSound = loadSound('assets/gunshot.mp3');
   // zombieDeathSound = loadSound('assets/zombie_death.mp3');
@@ -296,45 +301,24 @@ function drawCrosshair() {
 function drawPlayer() {
   // Player position at bottom center
   let playerX = width/2;
-  let playerY = height - 80;
+  let playerY = height - 100; // Moved player slightly lower to accommodate larger size
   
   // Determine if player faces left or right based on mouse position
-  let facingRight = mouseX > width/2;
+  let facingRight = mouseX < width/2;  // image faces left
   
-  // Draw player body
-  fill(50, 50, 150); // Blue color for player
-  noStroke();
+  push(); // Save drawing state
+  imageMode(CENTER);
+  translate(playerX, playerY);
   
-  // Body
-  rect(playerX - 20, playerY - 30, 40, 60);
-  
-  // Head
-  fill(200, 150, 100); // Skin tone
-  ellipse(playerX, playerY - 40, 30, 30);
-  
-  // Arms - extended toward mouse direction
-  fill(50, 50, 150);
-  if (facingRight) {
-    // Right arm extended
-    rect(playerX + 10, playerY - 20, 30, 15);
-    // Gun
-    fill(70);
-    rect(playerX + 30, playerY - 25, 20, 10);
-  } else {
-    // Left arm extended
-    rect(playerX - 40, playerY - 20, 30, 15);
-    // Gun
-    fill(70);
-    rect(playerX - 60, playerY - 25, 20, 10);
+  // Flip the image if facing left/right
+  if (!facingRight) {
+    scale(-1, 1);
   }
   
-  // Eyes looking in mouse direction
-  fill(255);
-  if (facingRight) {
-    ellipse(playerX + 8, playerY - 40, 8, 8);
-  } else {
-    ellipse(playerX - 8, playerY - 40, 8, 8);
-  }
+  // Draw player image - increased size from 80x80 to 120x120
+  image(playerImg, 0, 0, 220, 220);
+  
+  pop(); // Restore drawing state
 }
 
 function updateZombies() {
@@ -451,7 +435,7 @@ function mousePressed() {
   // Shooting
   if (gameState === 'playing' && !reloading) {
     if (ammo > 0) {
-      bullets.push(new Bullet(width/2, height - 50, mouseX, mouseY));
+      bullets.push(new Bullet(width/2, height - 75, mouseX, mouseY));  //50
       ammo--;
       // if (gunSound) gunSound.play();
     } else {
@@ -490,11 +474,12 @@ class Zombie {
     this.x = x;
     this.y = y;
     this.speed = speed;
-    this.size = random(40, 60);
+    this.size = random(200, 230);
     this.health = 100;
     this.damage = 25; // Base damage (will increase over time)
     this.points = 10;
-    this.color = color(random(50, 100), random(100, 150), random(50, 100)); // Greenish
+    this.color = color(random(50, 100), random(100, 150), random(50, 100)); // Keep color for death effects
+    this.imgIndex = floor(random(zombieImgs.length)); // Randomly select zombie type
   }
   
   update() {
@@ -511,32 +496,24 @@ class Zombie {
   }
   
   display() {
-    // Draw zombie
-    fill(this.color);
-    noStroke();
+    push(); // Save current drawing state
     
-    // Body
-    ellipse(this.x, this.y, this.size, this.size);
-    
-    // Arms (static, no movement)
-    rect(this.x - this.size/2 - 10, this.y, this.size/2, 10);
-    rect(this.x + this.size/2 - 10, this.y, this.size/2, 10);
-    
-    // Eyes
-    fill(255, 0, 0);
-    ellipse(this.x - this.size/5, this.y - this.size/6, this.size/5, this.size/8);
-    ellipse(this.x + this.size/5, this.y - this.size/6, this.size/5, this.size/8);
+    // Draw zombie image
+    imageMode(CENTER);
+    image(zombieImgs[this.imgIndex], this.x, this.y, this.size, this.size);
     
     // Health bar
     fill(0, 0, 0, 150);
     rect(this.x - this.size/2, this.y - this.size/2 - 15, this.size, 5);
     fill(255, 0, 0);
     rect(this.x - this.size/2, this.y - this.size/2 - 15, map(this.health, 0, 100, 0, this.size), 5);
+    
+    pop(); // Restore drawing state
   }
   
   reachedPlayer() {
     // Check if zombie reached the player area
-    return this.y > height - 100;
+    return this.y > height - 160;
   }
 }
 
